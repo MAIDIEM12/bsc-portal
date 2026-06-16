@@ -1,7 +1,10 @@
 {
   "functions": {
-    "api/submit-form.ts": {
+    "submit-form.ts": {
       "includeFiles": "template.docx"
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/submit-form", "destination": "/submit-form" }
+  ]
 }
