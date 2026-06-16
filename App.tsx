@@ -92,7 +92,7 @@ export default function App() {
     setIsSubmitting(true);
     setSuccess(false);
     try {
-      const response = await fetch('/api/submit-form', {
+      const response = await fetch('/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
