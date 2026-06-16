@@ -1,1 +1,7 @@
-{}
+{
+  "functions": {
+    "api/submit-form.ts": {
+      "includeFiles": "template.docx"
+    }
+  }
+}
