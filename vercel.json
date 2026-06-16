@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/**/*.ts": {
+    "api/submit-form.ts": {
       "includeFiles": "template.docx"
     }
   }
