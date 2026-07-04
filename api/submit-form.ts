@@ -56,8 +56,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       start_date:      fmtDate(d.start_date),
       why_bsc:         d.why_bsc || '',
       ref1_name:       d.ref1_name || '—',
+      ref1_title:      d.ref1_title || '—',
+      ref1_company:    d.ref1_company || '—',
       ref1_phone:      d.ref1_phone || '—',
       ref2_name:       d.ref2_name || '—',
+      ref2_title:      d.ref2_title || '—',
+      ref2_company:    d.ref2_company || '—',
       ref2_phone:      d.ref2_phone || '—',
     });
 
