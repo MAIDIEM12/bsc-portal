@@ -81,8 +81,8 @@ const defaultValues = {
   current_salary: '', expected_salary: '',
   is_employed: '', notice_period: '', start_date: '',
   why_bsc: '',
-  ref1_name: '', ref1_phone: '',
-  ref2_name: '', ref2_phone: '',
+  ref1_name: '', ref1_title: '', ref1_company: '', ref1_phone: '',
+  ref2_name: '', ref2_title: '', ref2_company: '', ref2_phone: '',
 };
 
 export default function App() {
@@ -196,15 +196,23 @@ export default function App() {
                 <Err msg={errors.self_intro?.message as string} />
               </Field>
 
-              <Select label="Tổng số năm kinh nghiệm trong ngành" required
-                options={[
-                  { value: 'Dưới 1 năm', label: 'Dưới 1 năm (fresher)' },
-                  { value: '1-3 năm', label: '1 – 3 năm' },
-                  { value: '3-5 năm', label: '3 – 5 năm' },
-                  { value: '5-8 năm', label: '5 – 8 năm' },
-                  { value: 'Trên 8 năm', label: 'Trên 8 năm' },
-                ]}
-                {...register('years_exp', { required: REQ })} error={errors.years_exp?.message as string} />
+              <Field>
+                <Label required>Tổng số năm kinh nghiệm trong ngành</Label>
+                <p className="text-xs text-[#5B8DB8] -mt-0.5">
+                  Tính tổng thời gian bạn đã đi làm — kể cả internship và part-time. Nếu bạn vừa tốt nghiệp hoặc đang chuyển ngành, chọn "Chưa có / Đang bắt đầu" nhé.
+                </p>
+                <select className={cn(base, 'cursor-pointer', errors.years_exp && 'border-red-400')}
+                  {...register('years_exp', { required: REQ })}>
+                  <option value="">-- Chọn --</option>
+                  <option value="Chưa có / Đang bắt đầu">Chưa có / Đang bắt đầu (fresher hoặc chuyển ngành)</option>
+                  <option value="Dưới 1 năm">Dưới 1 năm (có internship hoặc part-time)</option>
+                  <option value="1-3 năm">1 – 3 năm</option>
+                  <option value="3-5 năm">3 – 5 năm</option>
+                  <option value="5-8 năm">5 – 8 năm</option>
+                  <option value="Trên 8 năm">Trên 8 năm</option>
+                </select>
+                <Err msg={errors.years_exp?.message as string} />
+              </Field>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Input label="Công ty gần nhất" required placeholder="Tên công ty"
@@ -297,7 +305,7 @@ export default function App() {
             {/* Card 5: Câu hỏi cuối */}
             <Card num="05" icon={<MessageSquare size={14} />} title="Câu hỏi cuối — quan trọng nhất 👋">
               <Field>
-                <Label required>Điều gì khiến bạn muốn gia nhập team Blue Sky?</Label>
+                <Label required>Điều gì khiến bạn muốn gia nhập team Blue Sky Corporation?</Label>
                 <p className="text-xs text-[#5B8DB8] -mt-0.5">Không cần câu trả lời hoàn hảo — chỉ cần thật.</p>
                 <textarea rows={4}
                   className={cn('resize-y', base, errors.why_bsc && 'border-red-400')}
@@ -315,11 +323,15 @@ export default function App() {
                   <div className="flex flex-col gap-3">
                     <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người 1</p>
                     <Input label="Họ tên" placeholder="Nguyễn Thị B" {...register('ref1_name')} />
+                    <Input label="Chức danh" placeholder="Marketing Manager" {...register('ref1_title')} />
+                    <Input label="Công ty" placeholder="Tên công ty" {...register('ref1_company')} />
                     <Input label="Số điện thoại" type="tel" placeholder="09xx xxx xxx" {...register('ref1_phone')} />
                   </div>
                   <div className="flex flex-col gap-3">
                     <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người 2</p>
                     <Input label="Họ tên" placeholder="Trần Văn C" {...register('ref2_name')} />
+                    <Input label="Chức danh" placeholder="Creative Director" {...register('ref2_title')} />
+                    <Input label="Công ty" placeholder="Tên công ty" {...register('ref2_company')} />
                     <Input label="Số điện thoại" type="tel" placeholder="09xx xxx xxx" {...register('ref2_phone')} />
                   </div>
                 </div>
