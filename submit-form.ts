@@ -5,120 +5,88 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { Resend } from 'resend';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+const fmt = (val: any) => {
+  const d = String(val ?? '').replace(/\D/g, '');
+  if (!d) return String(val ?? '');
+  return new Intl.NumberFormat('en-US').format(parseInt(d, 10));
+};
+
+const fmtDate = (val: string) => {
+  if (!val) return '';
+  if (val.includes('-') && val.length === 10) {
+    const [y, m, d] = val.split('-');
+    return `${d}/${m}/${y}`;
   }
+  return val;
+};
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const data = req.body;
-    
-    // Load the docx file as binary content
+    const d = req.body;
+
     const templatePath = path.resolve(process.cwd(), 'template.docx');
     if (!fs.existsSync(templatePath)) {
-      console.error('Template path not found:', templatePath);
-      res.status(500).json({ error: 'Template not found at ' + templatePath });
-      return;
+      return res.status(500).json({ error: 'Template not found' });
     }
+
     const content = fs.readFileSync(templatePath, 'binary');
-
-    const zoom = new PizZip(content);
-    const doc = new Docxtemplater(zoom, {
-      paragraphLoop: true,
-      linebreaks: true,
-      nullGetter: function(part) {
-          if (!part.module) return "";
-          if (part.module === "rawxml") return "";
-          return "";
-      }
+    const zip = new PizZip(content);
+    const doc = new Docxtemplater(zip, {
+      paragraphLoop: true, linebreaks: true, nullGetter: () => ''
     });
 
-    // Format data - checkboxes to ticked/unticked characters
-    const checkmarks = {
-      cb_male: data.gender === 'Nam' ? '☒' : '☐',
-      cb_female: data.gender === 'Nữ' ? '☒' : '☐',
-      cb_single: data.marital_status === 'Độc thân' ? '☒' : '☐',
-      cb_married: data.marital_status === 'Đã kết hôn' ? '☒' : '☐',
-      cb_divorced: data.marital_status === 'Ly hôn' ? '☒' : '☐',
-      cb_hs: data.education_levels?.includes('PTTH') ? '☒' : '☐',
-      cb_inter: data.education_levels?.includes('Trung cấp') ? '☒' : '☐',
-      cb_college: data.education_levels?.includes('Cao đẳng') ? '☒' : '☐',
-      cb_uni: data.education_levels?.includes('Đại học') ? '☒' : '☐',
-      cb_post: data.education_levels?.includes('Trên đại học') ? '☒' : '☐',
-      cb_ielts: data.english === 'IELTS' ? '☒' : '☐',
-      cb_toefl: data.english === 'TOEFL' ? '☒' : '☐',
-      cb_toeic: data.english === 'TOEIC' ? '☒' : '☐',
-      cb_ms: data.computer === 'MS Word, Excel, Powerpoint' ? '☒' : '☐',
-      cb_adobe: data.computer === 'Adobe Photoshop, AI' ? '☒' : '☐',
-    };
-
-    // Parse start_date to dd, mm, yyyy
-    let start_date_str = data.start_date || '';
-    let sd_dd = '  ', sd_mm = '  ', sd_yyyy = '    ';
-    const parts = start_date_str.includes('/') ? start_date_str.split('/') : start_date_str.split('-');
-    if (parts.length === 3) {
-       if (start_date_str.includes('/')) {
-           sd_dd = parts[0]; sd_mm = parts[1]; sd_yyyy = parts[2];
-       } else {
-           sd_yyyy = parts[0]; sd_mm = parts[1]; sd_dd = parts[2];
-       }
-    }
-
-    const formatBackendSalary = (val: any) => {
-      if (!val) return "";
-      const str = String(val).trim();
-      if (str.includes(',')) return str;
-      const digits = str.replace(/\D/g, "");
-      if (!digits) return str;
-      return new Intl.NumberFormat('en-US').format(parseInt(digits, 10));
-    };
-
-    const renderData = {
-      ...data,
-      ...checkmarks,
-      expected_salary: formatBackendSalary(data.expected_salary),
-      exp1_salary: formatBackendSalary(data.exp1_salary),
-      exp2_salary: formatBackendSalary(data.exp2_salary),
-      exp3_salary: formatBackendSalary(data.exp3_salary),
-      sd_dd,
-      sd_mm,
-      sd_yyyy
-    };
-
-    // Set the templateVariables
-    doc.render(renderData);
-
-    const buf = doc.getZip().generate({
-      type: 'nodebuffer',
-      compression: 'DEFLATE',
+    doc.render({
+      full_name:       d.full_name || '',
+      birth_year:      d.birth_year || '',
+      phone:           d.phone || '',
+      email:           d.email || '',
+      source:          d.source || '',
+      position:        d.position || '',
+      self_intro:      d.self_intro || '',
+      years_exp:       d.years_exp || '',
+      exp_company:     d.exp_company || '',
+      exp_time:        d.exp_time || '',
+      exp_position:    d.exp_position || '',
+      portfolio:       d.portfolio || '—',
+      current_salary:  fmt(d.current_salary),
+      expected_salary: fmt(d.expected_salary),
+      current_district: d.current_district || '',
+      hometown:        d.hometown || '',
+      is_employed:     d.is_employed || '',
+      notice_period:   d.notice_period || '—',
+      start_date:      fmtDate(d.start_date),
+      why_bsc:         d.why_bsc || '',
+      ref1_name:       d.ref1_name || '—',
+      ref1_title:      d.ref1_title || '—',
+      ref1_company:    d.ref1_company || '—',
+      ref1_phone:      d.ref1_phone || '—',
+      ref2_name:       d.ref2_name || '—',
+      ref2_title:      d.ref2_title || '—',
+      ref2_company:    d.ref2_company || '—',
+      ref2_phone:      d.ref2_phone || '—',
     });
 
-    const filename = `${data.position || 'Vi_tri'}_${data.full_name || 'Ho_va_ten'}_Phieu_thong_tin_ung_vien.docx`;
+    const buf = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' });
+    const filename = `${(d.position||'UV').replace(/\s+/g,'_')}_${(d.full_name||'').replace(/\s+/g,'_')}_BSC.docx`;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
-
     const hrEmail = process.env.HR_EMAIL || 'hcns@blueskycorp.com.vn';
 
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'BSC HR <onboarding@resend.dev>',
+    const { error: emailError } = await resend.emails.send({
+      from: 'BSC Tuyển dụng <onboarding@resend.dev>',
       to: hrEmail,
-      subject: `[Applicant] ${data.full_name} - ${data.position}`,
-      text: `Kính gửi HR,\n\nỨng viên ${data.full_name} vừa nộp form ứng tuyển cho vị trí ${data.position}.\n\nVui lòng xem file đính kèm để biết thêm chi tiết.\n\nTrân trọng,\nHệ thống Form`,
-      attachments: [
-        {
-          filename: filename,
-          content: buf
-        }
-      ]
+      subject: `[Ứng viên] ${d.full_name} — ${d.position}`,
+      text: `Xin chào HR,\n\n${d.full_name} vừa nộp đơn ứng tuyển vị trí ${d.position}.\n📞 ${d.phone} | 📧 ${d.email}\nNguồn: ${d.source}\nKinh nghiệm: ${d.years_exp}\n\nVui lòng xem file đính kèm.\n\nBlue Sky Portal`,
+      attachments: [{ filename, content: buf }]
     });
 
-    if (emailError) {
-      throw new Error(emailError.message);
-    }
+    if (emailError) throw new Error(emailError.message);
+    res.status(200).json({ success: true });
 
-    res.status(200).json({ success: true, message: 'Email sent successfully' });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to process request', details: error.message || String(error) });
+    res.status(500).json({ error: 'Failed', details: error.message || String(error) });
   }
 }
