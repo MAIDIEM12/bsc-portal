@@ -196,9 +196,9 @@ export default function App() {
           <CheckCircle2 size={40} className="text-[#005AAB]" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-[#005AAB] mb-2">Nhận được rồi, cảm ơn bạn!</h2>
+          <h2 className="text-2xl font-bold text-[#005AAB] mb-2">Hoàn tất rồi!</h2>
           <p className="text-[#5B8DB8] max-w-sm mx-auto leading-relaxed">
-            Team HR của BSC sẽ xem qua hồ sơ và liên hệ với bạn để sắp xếp buổi phỏng vấn trong thời gian sớm nhất. Hẹn gặp bạn!
+            Cảm ơn bạn đã hoàn thành thông tin. Team HR của Blue Sky Corporation đã ghi nhận hồ sơ — chúc bạn có một buổi phỏng vấn thật tốt và đầy năng lượng nhé!
           </p>
         </div>
         <img src={LOGO_SRC} alt="" className="h-8 opacity-30 mt-4" />
@@ -210,15 +210,15 @@ export default function App() {
     <div className="min-h-screen bg-[#F0F5FB] font-sans">
       <header className="bg-white border-b border-[#C8DDF0] px-6 h-16 flex items-center justify-between sticky top-0 z-10 shadow-sm">
         <img src={LOGO_SRC} alt="Blue Sky Corporation" className="h-9 object-contain" />
-        <span className="text-xs text-[#5B8DB8] hidden sm:block">Kết nối cùng BSC</span>
+        <span className="text-xs text-[#5B8DB8] hidden sm:block">Phiếu thông tin ứng viên</span>
       </header>
 
       <main className="py-10 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#005AAB] tracking-tight mb-2">Kết nối cùng BSC</h1>
-            <p className="text-[#5B8DB8] text-base leading-relaxed max-w-md mx-auto">
-              3–5 phút là xong. Không cần CV hoàn hảo — cứ kể thật là được.
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#005AAB] tracking-tight mb-1 uppercase">Phiếu Thông Tin Ứng Viên</h1>
+            <p className="text-[#5B8DB8] text-sm leading-relaxed max-w-md mx-auto">
+              Blue Sky Corporation — Vui lòng điền đầy đủ thông tin bên dưới.
             </p>
           </div>
 
@@ -290,8 +290,8 @@ export default function App() {
 
             <Card num="03" title="Chuyên môn của bạn">
               <Field>
-                <Label required>Tóm tắt chuyên môn cốt lõi</Label>
-                <Hint>Những gì bạn làm tốt nhất và trách nhiệm chính ở công việc gần nhất. 2–4 câu là đủ.</Hint>
+                <Label required>Tóm tắt chuyên môn</Label>
+                <Hint>Mô tả ngắn về chuyên môn và trách nhiệm chính bạn đã đảm nhận — không cần liệt kê tất cả, chỉ cần những điều liên quan nhất đến vị trí này.</Hint>
                 <textarea rows={3}
                   className={cn('resize-y', base, errors.self_intro && 'border-red-400')}
                   placeholder="VD: 4 năm làm Account tại agency FMCG. Chịu trách nhiệm manage brief từ client, phối hợp creative team và đảm bảo tiến độ campaign đúng deadline..."
@@ -360,8 +360,8 @@ export default function App() {
               </div>
             </Card>
 
-            <Card num="05" icon={<Users size={14} />} title="Người có thể tham vấn (không bắt buộc)">
-              <p className="text-sm text-[#5B8DB8] -mt-2">Nếu có, cung cấp thông tin 1-2 người BSC có thể liên hệ để tham khảo về kinh nghiệm của bạn.</p>
+            <Card num="05" icon={<Users size={14} />} title="Người có thể tham vấn">
+              <p className="text-sm text-[#5B8DB8] -mt-2">Cung cấp thông tin 1–2 người BSC có thể liên hệ để tham khảo về kinh nghiệm của bạn.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[1,2].map(n => (
                   <div key={n} className="flex flex-col gap-2">
