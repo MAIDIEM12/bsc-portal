@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CheckCircle2, Send, Loader2, Briefcase, Link2, DollarSign, MessageSquare, Users } from 'lucide-react';
+import { CheckCircle2, Loader2, Briefcase, DollarSign, MessageSquare, Users, ArrowRight } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -22,15 +22,19 @@ const PROVINCES = [
   "Tuyên Quang","Vĩnh Long","Vĩnh Phúc","Yên Bái"
 ];
 
-
 const HCM_DISTRICTS = [
   "Quận 1","Quận 3","Quận 4","Quận 5","Quận 6","Quận 7","Quận 8","Quận 10","Quận 11","Quận 12",
   "Bình Chánh","Bình Tân","Bình Thạnh","Cần Giờ","Củ Chi","Gò Vấp","Hóc Môn","Nhà Bè",
   "Phú Nhuận","Tân Bình","Tân Phú","Thủ Đức (TP. Thủ Đức)","Tỉnh/thành khác"
 ];
 
-
-const CREATIVE_KEYWORDS = ['design','designer','creative','content','sáng tạo','thiết kế','art','visual','brand','motion','illustration','copywriter','copy','filmmaker','video','photo'];
+const MONTHS = [
+  {v:"01",l:"Tháng 1"},{v:"02",l:"Tháng 2"},{v:"03",l:"Tháng 3"},{v:"04",l:"Tháng 4"},
+  {v:"05",l:"Tháng 5"},{v:"06",l:"Tháng 6"},{v:"07",l:"Tháng 7"},{v:"08",l:"Tháng 8"},
+  {v:"09",l:"Tháng 9"},{v:"10",l:"Tháng 10"},{v:"11",l:"Tháng 11"},{v:"12",l:"Tháng 12"},
+];
+const YEARS = Array.from({length: 26}, (_, i) => String(2000 + i)).reverse();
+const PORTFOLIO_KEYWORDS = ['design','designer','planning','planner','art director','creative director','visual','brand','motion','filmmaker','video','photo','illustrat'];
 
 const fmt = (val: any) => {
   const d = String(val ?? '').replace(/\D/g, '');
@@ -45,20 +49,20 @@ const Label = ({ children, required }: { children: React.ReactNode; required?: b
     {children}{required && <span className="text-red-400 ml-1">*</span>}
   </label>
 );
-
 const Field = ({ children }: { children: React.ReactNode }) => (
   <div className="flex flex-col gap-1.5">{children}</div>
 );
-
-const Err = ({ msg }: { msg?: string }) =>
-  msg ? <span className="text-xs text-red-500 mt-0.5">{msg}</span> : null;
+const Err = ({ msg }: { msg?: string }) => msg ? <span className="text-xs text-red-500 mt-0.5">{msg}</span> : null;
+const Hint = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-xs text-[#5B8DB8] -mt-0.5">{children}</p>
+);
 
 const Input = React.forwardRef<HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement> & { label: string; required?: boolean; error?: string; hint?: string }>(
   ({ label, required, error, hint, ...props }, ref) => (
     <Field>
       <Label required={required}>{label}</Label>
-      {hint && <p className="text-xs text-[#5B8DB8] -mt-0.5">{hint}</p>}
+      {hint && <Hint>{hint}</Hint>}
       <input className={cn(base, error && 'border-red-400 focus:ring-red-400/10')} ref={ref} {...props} />
       <Err msg={error} />
     </Field>
@@ -66,22 +70,7 @@ const Input = React.forwardRef<HTMLInputElement,
 );
 Input.displayName = 'Input';
 
-const Select = React.forwardRef<HTMLSelectElement,
-  React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; required?: boolean; error?: string; options: {value: string; label: string}[] }>(
-  ({ label, required, error, options, ...props }, ref) => (
-    <Field>
-      <Label required={required}>{label}</Label>
-      <select className={cn(base, 'cursor-pointer', error && 'border-red-400')} ref={ref} {...props}>
-        <option value="">-- Chọn --</option>
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
-      <Err msg={error} />
-    </Field>
-  )
-);
-Select.displayName = 'Select';
-
-const Card = ({ icon, num, title, children }: { icon: React.ReactNode; num: string; title: string; children: React.ReactNode }) => (
+const Card = ({ num, icon, title, children }: { num: string; icon?: React.ReactNode; title: string; children: React.ReactNode }) => (
   <div className="bg-white rounded-2xl p-6 shadow-sm border border-[#E3EDF7] flex flex-col gap-4">
     <div className="flex items-center gap-2 mb-1">
       <div className="w-7 h-7 rounded-lg bg-[#E3EDF7] flex items-center justify-center text-[#005AAB]">
@@ -93,16 +82,79 @@ const Card = ({ icon, num, title, children }: { icon: React.ReactNode; num: stri
   </div>
 );
 
+const ExpRow = ({ num, register, errors, watch }: any) => {
+  const toMonth = watch(`exp${num}_to_month`);
+  const isCurrent = toMonth === 'current';
+  return (
+    <div className="flex flex-col gap-3 p-4 bg-[#F8FAFD] rounded-xl border border-[#E3EDF7]">
+      <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest flex items-center gap-1">
+        Công ty {num}
+        {num === 1 ? <span className="text-red-400">*</span> : <span className="text-gray-400 normal-case font-normal ml-1">(nếu có)</span>}
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Input label="Tên công ty" required={num === 1} placeholder="Công ty ABC"
+          {...register(`exp${num}_company`, num === 1 ? { required: REQ } : {})}
+          error={num === 1 ? errors[`exp${num}_company`]?.message : undefined} />
+        <Input label="Chức danh" required={num === 1} placeholder="Account Executive"
+          {...register(`exp${num}_title`, num === 1 ? { required: REQ } : {})}
+          error={num === 1 ? errors[`exp${num}_title`]?.message : undefined} />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <Field>
+          <Label>Từ tháng</Label>
+          <select className={cn(base, 'cursor-pointer text-sm py-2')} {...register(`exp${num}_from_month`)}>
+            <option value="">--</option>
+            {MONTHS.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
+          </select>
+        </Field>
+        <Field>
+          <Label>Năm</Label>
+          <select className={cn(base, 'cursor-pointer text-sm py-2')} {...register(`exp${num}_from_year`)}>
+            <option value="">--</option>
+            {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
+        </Field>
+        <Field>
+          <Label>Đến tháng</Label>
+          <select className={cn(base, 'cursor-pointer text-sm py-2')} {...register(`exp${num}_to_month`)}>
+            <option value="">--</option>
+            <option value="current">Hiện tại</option>
+            {MONTHS.map(m => <option key={m.v} value={m.v}>{m.l}</option>)}
+          </select>
+        </Field>
+        {!isCurrent ? (
+          <Field>
+            <Label>Năm</Label>
+            <select className={cn(base, 'cursor-pointer text-sm py-2')} {...register(`exp${num}_to_year`)}>
+              <option value="">--</option>
+              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </Field>
+        ) : (
+          <Field>
+            <Label>&nbsp;</Label>
+            <div className="flex items-center h-[46px]">
+              <span className="text-sm text-[#005AAB] font-medium bg-[#E3EDF7] px-3 py-1.5 rounded-lg">✓ Đang làm</span>
+            </div>
+          </Field>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const defaultValues = {
-  full_name: '', phone: '', email: '', birth_year: '', source: '',
+  full_name: '', phone: '', email: '', birth_year: '',
+  current_district: '', hometown: '', source: '',
   position: '',
   self_intro: '', years_exp: '',
-  exp_company: '', exp_time: '', exp_position: '',
+  exp1_company: '', exp1_title: '', exp1_from_month: '', exp1_from_year: '', exp1_to_month: '', exp1_to_year: '',
+  exp2_company: '', exp2_title: '', exp2_from_month: '', exp2_from_year: '', exp2_to_month: '', exp2_to_year: '',
+  exp3_company: '', exp3_title: '', exp3_from_month: '', exp3_from_year: '', exp3_to_month: '', exp3_to_year: '',
   portfolio: '',
-  current_salary: '', expected_salary: '',
-  is_employed: '', notice_period: '', start_date: '',
+  expected_salary: '',
+  start_date: '',
   why_bsc: '',
-  current_district: '', hometown: '',
   ref1_name: '', ref1_title: '', ref1_company: '', ref1_phone: '',
   ref2_name: '', ref2_title: '', ref2_company: '', ref2_phone: '',
 };
@@ -114,10 +166,7 @@ export default function App() {
 
   const onSalary = (e: React.ChangeEvent<HTMLInputElement>) => { e.target.value = fmt(e.target.value); };
   const position = watch('position') || '';
-  const isEmployed = watch('is_employed');
-  const yearsExp = watch('years_exp') || '';
-  const isFresher = yearsExp === 'Chưa có / Đang bắt đầu';
-  const isCreative = CREATIVE_KEYWORDS.some(k => position.toLowerCase().includes(k));
+  const isPortfolioRequired = PORTFOLIO_KEYWORDS.some(k => position.toLowerCase().includes(k));
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
@@ -139,268 +188,209 @@ export default function App() {
 
   if (done) return (
     <div className="min-h-screen bg-[#F0F5FB] font-sans flex flex-col">
-      <header className="bg-white border-b border-[#C8DDF0] px-6 h-16 flex items-center justify-between">
+      <header className="bg-white border-b border-[#C8DDF0] px-6 h-16 flex items-center">
         <img src={LOGO_SRC} alt="Blue Sky Corporation" className="h-9 object-contain" />
       </header>
-      <div className="flex-1 flex flex-col items-center justify-center py-20 text-center gap-6 px-4">
+      <div className="flex-1 flex flex-col items-center justify-center py-20 text-center gap-5 px-4">
         <div className="w-20 h-20 bg-[#E3EDF7] rounded-full flex items-center justify-center">
           <CheckCircle2 size={40} className="text-[#005AAB]" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-[#005AAB] mb-2">Gửi thành công!</h2>
+          <h2 className="text-2xl font-bold text-[#005AAB] mb-2">Hồ sơ đã được gửi!</h2>
           <p className="text-[#5B8DB8] max-w-sm mx-auto leading-relaxed">
-            Cảm ơn bạn đã dành thời gian. Team BSC sẽ liên hệ sớm — hẹn gặp!
+            Cảm ơn bạn đã dành thời gian. BSC sẽ liên hệ sớm — hẹn gặp!
           </p>
         </div>
-        <img src={LOGO_SRC} alt="" className="h-8 opacity-40 mt-4" />
+        <img src={LOGO_SRC} alt="" className="h-8 opacity-30 mt-4" />
       </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-[#F0F5FB] font-sans">
-      <header className="bg-white border-b border-[#C8DDF0] px-6 h-16 flex items-center justify-between sticky top-0 z-10">
+      <header className="bg-white border-b border-[#C8DDF0] px-6 h-16 flex items-center justify-between sticky top-0 z-10 shadow-sm">
         <img src={LOGO_SRC} alt="Blue Sky Corporation" className="h-9 object-contain" />
-        <span className="text-xs text-[#5B8DB8] hidden sm:block">Phiếu thông tin sơ tuyển</span>
+        <span className="text-xs text-[#5B8DB8] hidden sm:block">Kết nối cùng BSC</span>
       </header>
 
       <main className="py-10 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto">
-
           <div className="mb-8 text-center">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#005AAB] tracking-tight mb-2">
-              Get to Know You
-            </h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#005AAB] tracking-tight mb-2">Kết nối cùng BSC</h1>
             <p className="text-[#5B8DB8] text-base leading-relaxed max-w-md mx-auto">
-              Không cần CV hoàn hảo. Cứ kể thật — BSC muốn hiểu con người bạn, không chỉ hồ sơ.
+              3–5 phút là xong. Không cần CV hoàn hảo — cứ kể thật là được.
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
 
-            {/* Card 1: Bạn là ai */}
-            <Card num="01" icon={null} title="Bạn là ai?">
+            <Card num="01" title="Bạn là ai?">
               <Input label="Họ và tên" required placeholder="Nguyễn Văn A"
-                {...register('full_name', { required: REQ })} error={errors.full_name?.message as string} />
+                {...register('full_name', { required: REQ })} error={errors.full_name?.message} />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Input label="Số điện thoại" required type="tel" placeholder="09xx xxx xxx"
-                  {...register('phone', { required: REQ })} error={errors.phone?.message as string} />
+                  {...register('phone', { required: REQ })} error={errors.phone?.message} />
                 <Input label="Email" required type="email" placeholder="ten@email.com"
                   {...register('email', { required: REQ, pattern: { value: /^\S+@\S+\.\S+$/, message: 'Email không hợp lệ' } })}
-                  error={errors.email?.message as string} />
-                <Input label="Năm sinh" required type="number" placeholder="VD: 1998"
-                  {...register('birth_year', { required: REQ, min: { value: 1970, message: 'Năm không hợp lệ' }, max: { value: 2007, message: 'Năm không hợp lệ' } })}
-                  error={errors.birth_year?.message as string} />
+                  error={errors.email?.message} />
+                <Input label="Năm sinh" required type="number" placeholder="1998"
+                  {...register('birth_year', { required: REQ, min: { value: 1970, message: 'Không hợp lệ' }, max: { value: 2007, message: 'Không hợp lệ' } })}
+                  error={errors.birth_year?.message} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field>
-                  <Label required>Đang sinh sống tại</Label>
-                  <p className="text-xs text-[#5B8DB8] -mt-0.5">Quận/huyện bạn đang ở — để BSC biết khoảng cách di chuyển.</p>
+                  <Label required>Đang sống tại</Label>
+                  <Hint>Để BSC ước lượng khoảng cách di chuyển.</Hint>
                   <select className={cn(base, 'cursor-pointer', errors.current_district && 'border-red-400')}
                     {...register('current_district', { required: REQ })}>
                     <option value="">-- Chọn quận/huyện --</option>
                     {HCM_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
-                  <Err msg={errors.current_district?.message as string} />
+                  <Err msg={errors.current_district?.message} />
                 </Field>
-                <Select label="Quê quán" required
-                  options={PROVINCES.map(p => ({ value: p, label: p }))}
-                  placeholder="-- Chọn tỉnh/thành --"
-                  {...register('hometown', { required: REQ })}
-                  error={errors.hometown?.message as string} />
+                <Field>
+                  <Label required>Quê quán</Label>
+                  <select className={cn(base, 'cursor-pointer', errors.hometown && 'border-red-400')}
+                    {...register('hometown', { required: REQ })}>
+                    <option value="">-- Chọn tỉnh/thành --</option>
+                    {PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
+                  </select>
+                  <Err msg={errors.hometown?.message} />
+                </Field>
               </div>
-
-              <Select label="Bạn biết đến BSC qua đâu?" required
-                options={[
-                  { value: 'LinkedIn', label: 'LinkedIn' },
-                  { value: 'Facebook', label: 'Facebook / Instagram' },
-                  { value: 'Referral', label: 'Người quen giới thiệu' },
-                  { value: 'JobBoard', label: 'Job board (VietnamWorks, TopCV...)' },
-                  { value: 'Google', label: 'Tự tìm kiếm Google' },
-                  { value: 'Other', label: 'Khác' },
-                ]}
-                {...register('source', { required: REQ })} error={errors.source?.message as string} />
+              <Field>
+                <Label required>Biết đến BSC qua đâu?</Label>
+                <select className={cn(base, 'cursor-pointer', errors.source && 'border-red-400')}
+                  {...register('source', { required: REQ })}>
+                  <option value="">-- Chọn --</option>
+                  <option value="LinkedIn">LinkedIn</option>
+                  <option value="Facebook">Facebook / Instagram</option>
+                  <option value="Referral">Người quen giới thiệu</option>
+                  <option value="JobBoard">Job board (VietnamWorks, TopCV...)</option>
+                  <option value="Google">Tự tìm kiếm Google</option>
+                  <option value="Other">Khác</option>
+                </select>
+                <Err msg={errors.source?.message} />
+              </Field>
             </Card>
 
-            {/* Card 2: Vị trí */}
             <Card num="02" icon={<Briefcase size={14} />} title="Bạn đang apply vị trí nào?">
               <Input label="Vị trí ứng tuyển" required
-                placeholder="VD: Account Executive, Graphic Designer, Content Creator, HR..."
-                {...register('position', { required: REQ })} error={errors.position?.message as string} />
+                placeholder="VD: Account Executive, Graphic Designer, Planner, HR..."
+                {...register('position', { required: REQ })} error={errors.position?.message} />
             </Card>
 
-            {/* Card 3: Hành trình */}
-            <Card num="03" icon={null} title="Hành trình của bạn">
+            <Card num="03" title="Chuyên môn của bạn">
               <Field>
-                <Label required>Kể ngắn về bản thân — bạn đã làm gì và giỏi nhất ở điều gì?</Label>
-                <p className="text-xs text-[#5B8DB8] -mt-0.5">2-4 câu là đủ. Viết tự nhiên như kể cho bạn bè nghe.</p>
+                <Label required>Tóm tắt chuyên môn cốt lõi</Label>
+                <Hint>Những gì bạn làm tốt nhất và trách nhiệm chính ở công việc gần nhất. 2–4 câu là đủ.</Hint>
                 <textarea rows={3}
                   className={cn('resize-y', base, errors.self_intro && 'border-red-400')}
-                  placeholder="VD: Mình có 4 năm làm account tại agency, chủ yếu handle các brand FMCG. Điểm mạnh nhất là manage client relationship và đẩy brief đúng deadline..."
+                  placeholder="VD: 4 năm làm Account tại agency FMCG. Chịu trách nhiệm manage brief từ client, phối hợp creative team và đảm bảo tiến độ campaign đúng deadline..."
                   {...register('self_intro', { required: REQ, minLength: { value: 30, message: 'Viết thêm một chút nữa nhé!' } })} />
-                <Err msg={errors.self_intro?.message as string} />
+                <Err msg={errors.self_intro?.message} />
               </Field>
 
               <Field>
-                <Label required>Tổng số năm kinh nghiệm trong ngành</Label>
-                <p className="text-xs text-[#5B8DB8] -mt-0.5">
-                  Tính tổng thời gian bạn đã đi làm — kể cả internship và part-time. Nếu bạn vừa tốt nghiệp hoặc đang chuyển ngành, chọn "Chưa có / Đang bắt đầu" nhé.
-                </p>
+                <Label required>Tổng số năm kinh nghiệm (tất cả lĩnh vực)</Label>
                 <select className={cn(base, 'cursor-pointer', errors.years_exp && 'border-red-400')}
                   {...register('years_exp', { required: REQ })}>
                   <option value="">-- Chọn --</option>
-                  <option value="Chưa có / Đang bắt đầu">Chưa có / Đang bắt đầu (fresher hoặc chuyển ngành)</option>
-                  <option value="Dưới 1 năm">Dưới 1 năm (có internship hoặc part-time)</option>
+                  <option value="Chưa có / Đang bắt đầu">Chưa có — fresher hoặc vừa chuyển ngành</option>
+                  <option value="Dưới 1 năm">Dưới 1 năm (có internship / part-time)</option>
                   <option value="1-3 năm">1 – 3 năm</option>
                   <option value="3-5 năm">3 – 5 năm</option>
                   <option value="5-8 năm">5 – 8 năm</option>
                   <option value="Trên 8 năm">Trên 8 năm</option>
                 </select>
-                <Err msg={errors.years_exp?.message as string} />
+                <Err msg={errors.years_exp?.message} />
               </Field>
 
-              {!isFresher && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <Input label="Công ty gần nhất" required placeholder="Tên công ty"
-                    {...register('exp_company', { required: !isFresher ? REQ : false })} error={errors.exp_company?.message as string} />
-                  <Input label="Thời gian" required placeholder="01/2022 – nay"
-                    {...register('exp_time', { required: !isFresher ? REQ : false })} error={errors.exp_time?.message as string} />
-                  <Input label="Vị trí / Chức danh" required placeholder="Senior Designer"
-                    {...register('exp_position', { required: !isFresher ? REQ : false })} error={errors.exp_position?.message as string} />
-                </div>
-              )}
-              {isFresher && (
-                <div className="bg-[#F0F5FB] rounded-xl p-4 text-sm text-[#5B8DB8]">
-                  💡 Bạn chưa có kinh nghiệm đi làm — không sao cả! BSC chào đón cả fresher. Nếu có internship hay project trường thì điền vào phần giới thiệu bản thân nhé.
-                </div>
-              )}
+              <div className="flex flex-col gap-3">
+                <Label>Quá trình công tác (2–3 công ty gần nhất)</Label>
+                {[1,2,3].map(n => (
+                  <ExpRow key={n} num={n} register={register} errors={errors} watch={watch} />
+                ))}
+              </div>
 
               <Field>
-                <Label required={isCreative}>
-                  Portfolio / Link sản phẩm
-                  {isCreative && <span className="ml-2 text-red-400 normal-case text-xs font-normal">(bắt buộc cho vị trí sáng tạo)</span>}
+                <Label required={isPortfolioRequired}>
+                  Portfolio / Sản phẩm tiêu biểu
+                  {isPortfolioRequired && <span className="ml-1 text-red-400 normal-case text-xs font-normal">(bắt buộc với vị trí này)</span>}
                 </Label>
-                <p className="text-xs text-[#5B8DB8] -mt-0.5">
-                  {isCreative
-                    ? 'Behance, Dribbble, website cá nhân, Google Drive... đều được.'
-                    : 'LinkedIn, website cá nhân, hoặc bỏ qua nếu chưa có.'}
-                </p>
+                <Hint>
+                  {isPortfolioRequired
+                    ? 'Behance, Dribbble, Google Drive, website cá nhân... đều được.'
+                    : 'Bắt buộc với vị trí Design & Planning. Các vị trí khác có thể bỏ qua.'}
+                </Hint>
                 <input className={cn(base, errors.portfolio && 'border-red-400')}
                   placeholder="https://..."
-                  {...register('portfolio', isCreative ? { required: REQ } : {})} />
-                <Err msg={errors.portfolio?.message as string} />
+                  {...register('portfolio', isPortfolioRequired ? { required: REQ } : {})} />
+                <Err msg={errors.portfolio?.message} />
               </Field>
             </Card>
 
-            {/* Card 4: Mong đợi */}
-            <Card num="04" icon={<DollarSign size={14} />} title="Mong đợi & Logistics">
+            <Card num="04" icon={<DollarSign size={14} />} title="Mong đợi">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field>
-                  <Label>Lương hiện tại (Gross/tháng)</Label>
-                  <p className="text-xs text-[#5B8DB8] -mt-0.5">Để trống nếu bạn chưa đi làm hoặc không muốn chia sẻ.</p>
-                  <div className="relative">
-                    <input className={cn(base, 'pr-16')}
-                      placeholder="VD: 12,000,000"
-                      {...register('current_salary', { onChange: onSalary })} />
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5B8DB8] text-sm">VND</span>
-                  </div>
-                  <Err msg={errors.current_salary?.message as string} />
-                </Field>
-                <Field>
-                  <Label required>Lương mong muốn (Gross/tháng)</Label>
+                  <Label required>Mức lương mong muốn</Label>
+                  <Hint>Chỉ nhập số. Không cần ghi Gross/Net.</Hint>
                   <div className="relative">
                     <input className={cn(base, 'pr-16', errors.expected_salary && 'border-red-400')}
-                      placeholder="VD: 18,000,000"
+                      placeholder="18,000,000"
                       {...register('expected_salary', { required: REQ, onChange: onSalary })} />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5B8DB8] text-sm">VND</span>
                   </div>
-                  <Err msg={errors.expected_salary?.message as string} />
+                  <Err msg={errors.expected_salary?.message} />
                 </Field>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field>
-                  <Label required>Hiện đang đi làm không?</Label>
-                  <div className="flex gap-4 mt-1">
-                    {['Có', 'Không'].map(v => (
-                      <label key={v} className="flex items-center gap-2 text-[0.9rem] cursor-pointer">
-                        <input type="radio" value={v}
-                          {...register('is_employed', { required: REQ })}
-                          className="w-4 h-4 text-[#005AAB]" />
-                        {v}
-                      </label>
-                    ))}
-                  </div>
-                  <Err msg={errors.is_employed?.message as string} />
+                  <Label required>Có thể bắt đầu từ ngày</Label>
+                  <input type="date" className={cn(base, errors.start_date && 'border-red-400')}
+                    {...register('start_date', { required: REQ })} />
+                  <Err msg={errors.start_date?.message} />
                 </Field>
-
-                {isEmployed === 'Có' && (
-                  <Select label="Có thể nghỉ sau bao lâu?" required
-                    options={[
-                      { value: 'Ngay lập tức', label: 'Ngay lập tức' },
-                      { value: '2 tuần', label: '2 tuần' },
-                      { value: '1 tháng', label: '1 tháng' },
-                      { value: 'Hơn 1 tháng', label: 'Hơn 1 tháng' },
-                    ]}
-                    {...register('notice_period', isEmployed === 'Có' ? { required: REQ } : {})}
-                    error={errors.notice_period?.message as string} />
-                )}
               </div>
-
-              <Field>
-                <Label required>Có thể bắt đầu từ ngày</Label>
-                <input type="date" className={cn(base, errors.start_date && 'border-red-400')}
-                  {...register('start_date', { required: REQ })} />
-                <Err msg={errors.start_date?.message as string} />
-              </Field>
             </Card>
 
-            {/* Card 5: Câu hỏi cuối */}
-            <Card num="05" icon={<MessageSquare size={14} />} title="Câu hỏi cuối — quan trọng nhất 👋">
+            <Card num="05" icon={<MessageSquare size={14} />} title="Câu hỏi cuối 👋">
               <Field>
-                <Label required>Điều gì khiến bạn muốn gia nhập team Blue Sky Corporation?</Label>
-                <p className="text-xs text-[#5B8DB8] -mt-0.5">Không cần câu trả lời hoàn hảo — chỉ cần thật.</p>
+                <Label required>Điều gì khiến bạn muốn gia nhập Blue Sky Corporation?</Label>
+                <Hint>Không cần hoàn hảo — chỉ cần thật.</Hint>
                 <textarea rows={4}
                   className={cn('resize-y', base, errors.why_bsc && 'border-red-400')}
-                  placeholder="Kể một chút... Bạn biết đến BSC từ lúc nào? Điều gì ở đây hấp dẫn bạn?"
+                  placeholder="Kể một chút... Bạn biết đến BSC từ khi nào? Điều gì ở đây hấp dẫn bạn?"
                   {...register('why_bsc', { required: REQ, minLength: { value: 20, message: 'Viết thêm một chút nữa nhé!' } })} />
-                <Err msg={errors.why_bsc?.message as string} />
+                <Err msg={errors.why_bsc?.message} />
               </Field>
-
-              <div className="border-t border-[#E3EDF7] pt-4 mt-2">
-                <p className="text-sm text-gray-600 mb-3 flex items-center gap-2">
-                  <Users size={15} className="text-[#005AAB]" />
-                  <span>Người có thể tham vấn về công việc cũ <span className="text-[#5B8DB8]">(nếu có — không bắt buộc)</span></span>
+              <div className="border-t border-[#E3EDF7] pt-4 mt-1">
+                <p className="text-sm text-gray-500 mb-3 flex items-center gap-2">
+                  <Users size={14} className="text-[#005AAB]" />
+                  Người có thể tham vấn về công việc cũ
+                  <span className="text-[#5B8DB8] ml-1">(không bắt buộc)</span>
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-3">
-                    <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người 1</p>
-                    <Input label="Họ tên" placeholder="Nguyễn Thị B" {...register('ref1_name')} />
-                    <Input label="Chức danh" placeholder="Marketing Manager" {...register('ref1_title')} />
-                    <Input label="Công ty" placeholder="Tên công ty" {...register('ref1_company')} />
-                    <Input label="Số điện thoại" type="tel" placeholder="09xx xxx xxx" {...register('ref1_phone')} />
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người 2</p>
-                    <Input label="Họ tên" placeholder="Trần Văn C" {...register('ref2_name')} />
-                    <Input label="Chức danh" placeholder="Creative Director" {...register('ref2_title')} />
-                    <Input label="Công ty" placeholder="Tên công ty" {...register('ref2_company')} />
-                    <Input label="Số điện thoại" type="tel" placeholder="09xx xxx xxx" {...register('ref2_phone')} />
-                  </div>
+                  {[1,2].map(n => (
+                    <div key={n} className="flex flex-col gap-2">
+                      <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người {n}</p>
+                      <Input label="Họ tên" placeholder="Nguyễn Thị B" {...register(`ref${n}_name`)} />
+                      <Input label="Chức danh" placeholder="Marketing Manager" {...register(`ref${n}_title`)} />
+                      <Input label="Công ty" placeholder="Tên công ty" {...register(`ref${n}_company`)} />
+                      <Input label="SĐT" type="tel" placeholder="09xx xxx xxx" {...register(`ref${n}_phone`)} />
+                    </div>
+                  ))}
                 </div>
               </div>
             </Card>
 
-            {/* Submit */}
             <div className="flex flex-col gap-3 pt-2">
               <p className="text-xs text-[#5B8DB8] text-center leading-relaxed">
-                Bằng việc nhấn "Gửi", bạn đồng ý để Blue Sky Corporation lưu trữ thông tin này cho mục đích tuyển dụng.
+                Bằng việc nhấn gửi, bạn đồng ý để Blue Sky Corporation lưu trữ thông tin này cho mục đích tuyển dụng.
               </p>
               <button type="submit" disabled={submitting}
                 className="w-full bg-[#005AAB] text-white py-4 rounded-xl font-semibold text-base flex items-center justify-center gap-2 hover:bg-[#004990] active:scale-[0.99] transition-all disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#005AAB]/20">
                 {submitting
                   ? <><Loader2 className="animate-spin" size={20} />Đang gửi...</>
-                  : <><Send size={18} />Gửi thông tin</>}
+                  : <>Gửi hồ sơ ngay <ArrowRight size={18} /></>}
               </button>
             </div>
 
