@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CheckCircle2, Loader2, Briefcase, DollarSign, MessageSquare, Users, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Loader2, Briefcase, DollarSign, Users, ArrowRight } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -145,7 +145,7 @@ const ExpRow = ({ num, register, errors, watch }: any) => {
 
 const defaultValues = {
   full_name: '', phone: '', email: '', birth_year: '',
-  current_district: '', hometown: '', source: '',
+  current_district: '', hometown: '', source: '', source_referrer: '', source_other: '',
   position: '',
   self_intro: '', years_exp: '',
   exp1_company: '', exp1_title: '', exp1_from_month: '', exp1_from_year: '', exp1_to_month: '', exp1_to_year: '',
@@ -154,7 +154,6 @@ const defaultValues = {
   portfolio: '',
   expected_salary: '',
   start_date: '',
-  why_bsc: '',
   ref1_name: '', ref1_title: '', ref1_company: '', ref1_phone: '',
   ref2_name: '', ref2_title: '', ref2_company: '', ref2_phone: '',
 };
@@ -167,6 +166,7 @@ export default function App() {
   const onSalary = (e: React.ChangeEvent<HTMLInputElement>) => { e.target.value = fmt(e.target.value); };
   const position = watch('position') || '';
   const isPortfolioRequired = PORTFOLIO_KEYWORDS.some(k => position.toLowerCase().includes(k));
+  const sourceVal = watch('source') || '';
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
@@ -196,9 +196,9 @@ export default function App() {
           <CheckCircle2 size={40} className="text-[#005AAB]" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-[#005AAB] mb-2">Hồ sơ đã được gửi!</h2>
+          <h2 className="text-2xl font-bold text-[#005AAB] mb-2">Nhận được rồi, cảm ơn bạn!</h2>
           <p className="text-[#5B8DB8] max-w-sm mx-auto leading-relaxed">
-            Cảm ơn bạn đã dành thời gian. BSC sẽ liên hệ sớm — hẹn gặp!
+            Team HR của BSC sẽ xem qua hồ sơ và liên hệ với bạn để sắp xếp buổi phỏng vấn trong thời gian sớm nhất. Hẹn gặp bạn!
           </p>
         </div>
         <img src={LOGO_SRC} alt="" className="h-8 opacity-30 mt-4" />
@@ -272,6 +272,14 @@ export default function App() {
                 </select>
                 <Err msg={errors.source?.message} />
               </Field>
+              {sourceVal === 'Referral' && (
+                <Input label="Tên người giới thiệu" required placeholder="Họ tên người giới thiệu bạn"
+                  {...register('source_referrer', { required: REQ })} error={errors.source_referrer?.message} />
+              )}
+              {sourceVal === 'Other' && (
+                <Input label="Bạn biết đến BSC qua đâu?" required placeholder="Mô tả thêm nguồn của bạn..."
+                  {...register('source_other', { required: REQ })} error={errors.source_other?.message} />
+              )}
             </Card>
 
             <Card num="02" icon={<Briefcase size={14} />} title="Bạn đang apply vị trí nào?">
@@ -352,33 +360,18 @@ export default function App() {
               </div>
             </Card>
 
-            <Card num="05" icon={<MessageSquare size={14} />} title="Câu hỏi cuối 👋">
-              <Field>
-                <Label required>Điều gì khiến bạn muốn gia nhập Blue Sky Corporation?</Label>
-                <Hint>Không cần hoàn hảo — chỉ cần thật.</Hint>
-                <textarea rows={4}
-                  className={cn('resize-y', base, errors.why_bsc && 'border-red-400')}
-                  placeholder="Kể một chút... Bạn biết đến BSC từ khi nào? Điều gì ở đây hấp dẫn bạn?"
-                  {...register('why_bsc', { required: REQ, minLength: { value: 20, message: 'Viết thêm một chút nữa nhé!' } })} />
-                <Err msg={errors.why_bsc?.message} />
-              </Field>
-              <div className="border-t border-[#E3EDF7] pt-4 mt-1">
-                <p className="text-sm text-gray-500 mb-3 flex items-center gap-2">
-                  <Users size={14} className="text-[#005AAB]" />
-                  Người có thể tham vấn về công việc cũ
-                  <span className="text-[#5B8DB8] ml-1">(không bắt buộc)</span>
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {[1,2].map(n => (
-                    <div key={n} className="flex flex-col gap-2">
-                      <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người {n}</p>
-                      <Input label="Họ tên" placeholder="Nguyễn Thị B" {...register(`ref${n}_name`)} />
-                      <Input label="Chức danh" placeholder="Marketing Manager" {...register(`ref${n}_title`)} />
-                      <Input label="Công ty" placeholder="Tên công ty" {...register(`ref${n}_company`)} />
-                      <Input label="SĐT" type="tel" placeholder="09xx xxx xxx" {...register(`ref${n}_phone`)} />
-                    </div>
-                  ))}
-                </div>
+            <Card num="05" icon={<Users size={14} />} title="Người có thể tham vấn (không bắt buộc)">
+              <p className="text-sm text-[#5B8DB8] -mt-2">Nếu có, cung cấp thông tin 1-2 người BSC có thể liên hệ để tham khảo về kinh nghiệm của bạn.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1,2].map(n => (
+                  <div key={n} className="flex flex-col gap-2">
+                    <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người {n}</p>
+                    <Input label="Họ tên" placeholder="Nguyễn Thị B" {...register(`ref${n}_name`)} />
+                    <Input label="Chức danh" placeholder="Marketing Manager" {...register(`ref${n}_title`)} />
+                    <Input label="Công ty" placeholder="Tên công ty" {...register(`ref${n}_company`)} />
+                    <Input label="SĐT" type="tel" placeholder="09xx xxx xxx" {...register(`ref${n}_phone`)} />
+                  </div>
+                ))}
               </div>
             </Card>
 
