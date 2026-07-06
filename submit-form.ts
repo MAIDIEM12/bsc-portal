@@ -20,6 +20,15 @@ const fmtDate = (val: string) => {
   return val;
 };
 
+const fmtPeriod = (fromM: string, fromY: string, toM: string, toY: string) => {
+  const from = fromM && fromY ? `${fromM}/${fromY}` : fromY || fromM || '';
+  const to = toM === 'current' ? 'Hiện tại' : (toM && toY ? `${toM}/${toY}` : toY || toM || '');
+  if (!from && !to) return '';
+  if (!to) return from;
+  if (!from) return to;
+  return `${from} – ${to}`;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -38,34 +47,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     doc.render({
-      full_name:       d.full_name || '',
-      birth_year:      d.birth_year || '',
-      phone:           d.phone || '',
-      email:           d.email || '',
-      source:          d.source || '',
-      position:        d.position || '',
-      self_intro:      d.self_intro || '',
-      years_exp:       d.years_exp || '',
-      exp_company:     d.exp_company || '',
-      exp_time:        d.exp_time || '',
-      exp_position:    d.exp_position || '',
-      portfolio:       d.portfolio || '—',
-      current_salary:  fmt(d.current_salary),
-      expected_salary: fmt(d.expected_salary),
+      full_name:        d.full_name || '',
+      birth_year:       d.birth_year || '',
+      phone:            d.phone || '',
+      email:            d.email || '',
       current_district: d.current_district || '',
-      hometown:        d.hometown || '',
-      is_employed:     d.is_employed || '',
-      notice_period:   d.notice_period || '—',
-      start_date:      fmtDate(d.start_date),
-      why_bsc:         d.why_bsc || '',
-      ref1_name:       d.ref1_name || '—',
-      ref1_title:      d.ref1_title || '—',
-      ref1_company:    d.ref1_company || '—',
-      ref1_phone:      d.ref1_phone || '—',
-      ref2_name:       d.ref2_name || '—',
-      ref2_title:      d.ref2_title || '—',
-      ref2_company:    d.ref2_company || '—',
-      ref2_phone:      d.ref2_phone || '—',
+      hometown:         d.hometown || '',
+      source:           d.source || '',
+      position:         d.position || '',
+      self_intro:       d.self_intro || '',
+      years_exp:        d.years_exp || '',
+      exp1_company:     d.exp1_company || '',
+      exp1_title:       d.exp1_title || '',
+      exp1_period:      fmtPeriod(d.exp1_from_month, d.exp1_from_year, d.exp1_to_month, d.exp1_to_year),
+      exp2_company:     d.exp2_company || '',
+      exp2_title:       d.exp2_title || '',
+      exp2_period:      fmtPeriod(d.exp2_from_month, d.exp2_from_year, d.exp2_to_month, d.exp2_to_year),
+      exp3_company:     d.exp3_company || '',
+      exp3_title:       d.exp3_title || '',
+      exp3_period:      fmtPeriod(d.exp3_from_month, d.exp3_from_year, d.exp3_to_month, d.exp3_to_year),
+      portfolio:        d.portfolio || '—',
+      expected_salary:  fmt(d.expected_salary),
+      start_date:       fmtDate(d.start_date),
+      why_bsc:          d.why_bsc || '',
+      ref1_name:        d.ref1_name || '—',
+      ref1_title:       d.ref1_title || '—',
+      ref1_company:     d.ref1_company || '—',
+      ref1_phone:       d.ref1_phone || '—',
+      ref2_name:        d.ref2_name || '—',
+      ref2_title:       d.ref2_title || '—',
+      ref2_company:     d.ref2_company || '—',
+      ref2_phone:       d.ref2_phone || '—',
     });
 
     const buf = doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' });
@@ -78,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       from: 'BSC Tuyển dụng <onboarding@resend.dev>',
       to: hrEmail,
       subject: `[Ứng viên] ${d.full_name} — ${d.position}`,
-      text: `Xin chào HR,\n\n${d.full_name} vừa nộp đơn ứng tuyển vị trí ${d.position}.\n📞 ${d.phone} | 📧 ${d.email}\nNguồn: ${d.source}\nKinh nghiệm: ${d.years_exp}\n\nVui lòng xem file đính kèm.\n\nBlue Sky Portal`,
+      text: `Xin chào HR,\n\n${d.full_name} (${d.birth_year}) vừa nộp đơn ứng tuyển vị trí ${d.position}.\n📞 ${d.phone} | 📧 ${d.email}\nKinh nghiệm: ${d.years_exp}\n\nVui lòng xem file đính kèm.\n\nBSC Portal`,
       attachments: [{ filename, content: buf }]
     });
 
