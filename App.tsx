@@ -363,7 +363,6 @@ export default function App() {
             </Card>
 
             <Card num="05" icon={<Users size={14} />} title="Người có thể tham vấn">
-              <p className="text-sm text-[#5B8DB8] -mt-2">Cung cấp thông tin 1–2 người BSC có thể liên hệ để tham khảo về kinh nghiệm của bạn.</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[1,2].map(n => (
                   <div key={n} className="flex flex-col gap-2">
