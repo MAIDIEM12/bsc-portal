@@ -166,6 +166,8 @@ export default function App() {
   const onSalary = (e: React.ChangeEvent<HTMLInputElement>) => { e.target.value = fmt(e.target.value); };
   const position = watch('position') || '';
   const isPortfolioRequired = PORTFOLIO_KEYWORDS.some(k => position.toLowerCase().includes(k));
+  const yearsExp = watch('years_exp') || '';
+  const isFresher = yearsExp === 'Chưa có / Đang bắt đầu';
   const sourceVal = watch('source') || '';
 
   const onSubmit = async (data: any) => {
