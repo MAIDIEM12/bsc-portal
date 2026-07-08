@@ -82,7 +82,7 @@ const Card = ({ num, icon, title, children }: { num: string; icon?: React.ReactN
   </div>
 );
 
-const ExpRow = ({ num, register, errors, watch }: any) => {
+const ExpRow = ({ num, register, errors, watch, isFresher }: any) => {
   const toMonth = watch(`exp${num}_to_month`);
   const isCurrent = toMonth === 'current';
   return (
@@ -93,11 +93,11 @@ const ExpRow = ({ num, register, errors, watch }: any) => {
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input label="Tên công ty" required={num === 1} placeholder="Công ty ABC"
-          {...register(`exp${num}_company`, num === 1 ? { required: REQ } : {})}
-          error={num === 1 ? errors[`exp${num}_company`]?.message : undefined} />
+          {...register(`exp${num}_company`, (num === 1 && !isFresher) ? { required: REQ } : {})}
+          error={(num === 1 && !isFresher) ? errors[`exp${num}_company`]?.message : undefined} />
         <Input label="Chức danh" required={num === 1} placeholder="Account Executive"
-          {...register(`exp${num}_title`, num === 1 ? { required: REQ } : {})}
-          error={num === 1 ? errors[`exp${num}_title`]?.message : undefined} />
+          {...register(`exp${num}_title`, (num === 1 && !isFresher) ? { required: REQ } : {})}
+          error={(num === 1 && !isFresher) ? errors[`exp${num}_title`]?.message : undefined} />
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Field>
@@ -288,7 +288,7 @@ export default function App() {
                 {...register('position', { required: REQ })} error={errors.position?.message} />
             </Card>
 
-            <Card num="03" title="Chuyên môn của bạn">
+            <Card num="03" title="Chuyên môn & Kinh nghiệm">
               <Field>
                 <Label required>Tóm tắt chuyên môn</Label>
                 <Hint>Mô tả ngắn về chuyên môn và trách nhiệm chính bạn đã đảm nhận — không cần liệt kê tất cả, chỉ cần những điều liên quan nhất đến vị trí này.</Hint>
@@ -304,7 +304,7 @@ export default function App() {
                 <select className={cn(base, 'cursor-pointer', errors.years_exp && 'border-red-400')}
                   {...register('years_exp', { required: REQ })}>
                   <option value="">-- Chọn --</option>
-                  <option value="Chưa có / Đang bắt đầu">Chưa có — fresher hoặc vừa chuyển ngành</option>
+                  <option value="Chưa có / Đang bắt đầu">Chưa có — sinh viên / fresher</option>
                   <option value="Dưới 1 năm">Dưới 1 năm (có internship / part-time)</option>
                   <option value="1-3 năm">1 – 3 năm</option>
                   <option value="3-5 năm">3 – 5 năm</option>
@@ -315,9 +315,9 @@ export default function App() {
               </Field>
 
               <div className="flex flex-col gap-3">
-                <Label>Quá trình công tác (2–3 công ty gần nhất)</Label>
-                {[1,2,3].map(n => (
-                  <ExpRow key={n} num={n} register={register} errors={errors} watch={watch} />
+                <Label>Quá trình làm việc (2 công ty gần nhất)</Label>
+                {[1,2].map(n => (
+                  <ExpRow key={n} num={n} register={register} errors={errors} watch={watch} isFresher={isFresher} />
                 ))}
               </div>
 
