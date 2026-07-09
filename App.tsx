@@ -92,10 +92,10 @@ const ExpRow = ({ num, register, errors, watch, isFresher }: any) => {
         {num === 1 ? <span className="text-red-400">*</span> : <span className="text-gray-400 normal-case font-normal ml-1">(nếu có)</span>}
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Input label="Tên công ty" required={num === 1} placeholder="Công ty ABC"
+        <Input label="Tên công ty" required={num === 1} placeholder=""
           {...register(`exp${num}_company`, (num === 1 && !isFresher) ? { required: REQ } : {})}
           error={(num === 1 && !isFresher) ? errors[`exp${num}_company`]?.message : undefined} />
-        <Input label="Chức danh" required={num === 1} placeholder="Account Executive"
+        <Input label="Chức danh" required={num === 1} placeholder=""
           {...register(`exp${num}_title`, (num === 1 && !isFresher) ? { required: REQ } : {})}
           error={(num === 1 && !isFresher) ? errors[`exp${num}_title`]?.message : undefined} />
       </div>
@@ -286,7 +286,7 @@ export default function App() {
 
             <Card num="02" icon={<Briefcase size={14} />} title="Bạn đang apply vị trí nào?">
               <Input label="Vị trí ứng tuyển" required
-                placeholder="VD: Account Executive, Graphic Designer, Planner, HR..."
+                placeholder=""
                 {...register('position', { required: REQ })} error={errors.position?.message} />
             </Card>
 
@@ -296,7 +296,7 @@ export default function App() {
                 <Hint>Mô tả ngắn về chuyên môn và trách nhiệm chính bạn đã đảm nhận — không cần liệt kê tất cả, chỉ cần những điều liên quan nhất đến vị trí này.</Hint>
                 <textarea rows={3}
                   className={cn('resize-y', base, errors.self_intro && 'border-red-400')}
-                  placeholder="VD: 4 năm làm Account tại agency FMCG. Chịu trách nhiệm manage brief từ client, phối hợp creative team và đảm bảo tiến độ campaign đúng deadline..."
+                  placeholder=""
                   {...register('self_intro', { required: REQ, minLength: { value: 30, message: 'Viết thêm một chút nữa nhé!' } })} />
                 <Err msg={errors.self_intro?.message} />
               </Field>
@@ -347,7 +347,7 @@ export default function App() {
                   <Hint>Chỉ nhập số. Không cần ghi Gross/Net.</Hint>
                   <div className="relative">
                     <input className={cn(base, 'pr-16', errors.expected_salary && 'border-red-400')}
-                      placeholder="18,000,000"
+                      placeholder=""
                       {...register('expected_salary', { required: REQ, onChange: onSalary })} />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5B8DB8] text-sm">VND</span>
                   </div>
@@ -367,9 +367,9 @@ export default function App() {
                 {[1,2].map(n => (
                   <div key={n} className="flex flex-col gap-2">
                     <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest">Người {n}</p>
-                    <Input label="Họ tên" placeholder="Nguyễn Thị B" {...register(`ref${n}_name`)} />
-                    <Input label="Chức danh" placeholder="Marketing Manager" {...register(`ref${n}_title`)} />
-                    <Input label="Công ty" placeholder="Tên công ty" {...register(`ref${n}_company`)} />
+                    <Input label="Họ tên" placeholder="" {...register(`ref${n}_name`)} />
+                    <Input label="Chức danh" placeholder="" {...register(`ref${n}_title`)} />
+                    <Input label="Công ty" placeholder="" {...register(`ref${n}_company`)} />
                     <Input label="SĐT" type="tel" placeholder="09xx xxx xxx" {...register(`ref${n}_phone`)} />
                   </div>
                 ))}
