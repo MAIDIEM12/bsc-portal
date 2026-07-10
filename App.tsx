@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { CheckCircle2, Loader2, Briefcase, DollarSign, Users, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Loader2, Briefcase, DollarSign, Users, ArrowRight, GraduationCap } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -34,7 +34,6 @@ const MONTHS = [
   {v:"09",l:"Tháng 9"},{v:"10",l:"Tháng 10"},{v:"11",l:"Tháng 11"},{v:"12",l:"Tháng 12"},
 ];
 const YEARS = Array.from({length: 26}, (_, i) => String(2000 + i)).reverse();
-const PORTFOLIO_KEYWORDS = ['design','designer','planning','planner','art director','creative director','visual','brand','motion','filmmaker','video','photo','illustrat'];
 
 const fmt = (val: any) => {
   const d = String(val ?? '').replace(/\D/g, '');
@@ -82,23 +81,28 @@ const Card = ({ num, icon, title, children }: { num: string; icon?: React.ReactN
   </div>
 );
 
-const ExpRow = ({ num, register, errors, watch, isFresher }: any) => {
+const ExpRow = ({ num, register, errors, watch, onSalary }: any) => {
   const toMonth = watch(`exp${num}_to_month`);
   const isCurrent = toMonth === 'current';
+  const req = num === 1;
   return (
-    <div className="flex flex-col gap-3 p-4 bg-[#F8FAFD] rounded-xl border border-[#E3EDF7]">
+    <div className="flex flex-col gap-4 p-5 bg-[#F8FAFD] rounded-xl border border-[#E3EDF7]">
       <p className="text-xs font-semibold text-[#005AAB] uppercase tracking-widest flex items-center gap-1">
         Công ty {num}
-        {num === 1 ? <span className="text-red-400">*</span> : <span className="text-gray-400 normal-case font-normal ml-1">(nếu có)</span>}
+        {req ? <span className="text-red-400">*</span> : <span className="text-gray-400 normal-case font-normal ml-1">(nếu có)</span>}
       </p>
+
+      {/* Tên + Chức danh */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Input label="Tên công ty" required={num === 1} placeholder=""
-          {...register(`exp${num}_company`, (num === 1 && !isFresher) ? { required: REQ } : {})}
-          error={(num === 1 && !isFresher) ? errors[`exp${num}_company`]?.message : undefined} />
-        <Input label="Chức danh" required={num === 1} placeholder=""
-          {...register(`exp${num}_title`, (num === 1 && !isFresher) ? { required: REQ } : {})}
-          error={(num === 1 && !isFresher) ? errors[`exp${num}_title`]?.message : undefined} />
+        <Input label="Tên công ty" required={req}
+          {...register(`exp${num}_company`, req ? { required: REQ } : {})}
+          error={req ? errors[`exp${num}_company`]?.message : undefined} />
+        <Input label="Chức danh" required={req}
+          {...register(`exp${num}_title`, req ? { required: REQ } : {})}
+          error={req ? errors[`exp${num}_title`]?.message : undefined} />
       </div>
+
+      {/* Thời gian */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Field>
           <Label>Từ tháng</Label>
@@ -139,6 +143,39 @@ const ExpRow = ({ num, register, errors, watch, isFresher }: any) => {
           </Field>
         )}
       </div>
+
+      {/* 3 công việc chính */}
+      <Field>
+        <Label>3 công việc và trách nhiệm chính đã đảm nhận</Label>
+        <Hint>Mỗi dòng tối đa 70 ký tự — viết ngắn gọn, súc tích.</Hint>
+        <div className="flex flex-col gap-2">
+          {[1,2,3].map(t => (
+            <div key={t} className="flex items-center gap-2">
+              <span className="text-sm font-bold text-[#005AAB] w-5 shrink-0">{t}.</span>
+              <input
+                className={base}
+                maxLength={70}
+                placeholder=""
+                {...register(`exp${num}_task${t}`)}
+              />
+            </div>
+          ))}
+        </div>
+      </Field>
+
+      {/* Lương + Lý do nghỉ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Field>
+          <Label>Lương thực lãnh</Label>
+          <div className="relative">
+            <input className={cn(base, 'pr-16')} placeholder=""
+              {...register(`exp${num}_actual_salary`, { onChange: onSalary })} />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#5B8DB8] text-sm">VND</span>
+          </div>
+        </Field>
+        <Input label="Lý do nghỉ việc" placeholder=""
+          {...register(`exp${num}_leave_reason`)} />
+      </div>
     </div>
   );
 };
@@ -147,13 +184,16 @@ const defaultValues = {
   full_name: '', phone: '', email: '', birth_year: '',
   current_district: '', hometown: '', source: '', source_referrer: '', source_other: '',
   position: '',
-  self_intro: '', years_exp: '',
-  exp1_company: '', exp1_title: '', exp1_from_month: '', exp1_from_year: '', exp1_to_month: '', exp1_to_year: '',
-  exp2_company: '', exp2_title: '', exp2_from_month: '', exp2_from_year: '', exp2_to_month: '', exp2_to_year: '',
-  exp3_company: '', exp3_title: '', exp3_from_month: '', exp3_from_year: '', exp3_to_month: '', exp3_to_year: '',
-  portfolio: '',
-  expected_salary: '',
-  start_date: '',
+  education_level: '', edu_major: '',
+  exp1_company: '', exp1_title: '',
+  exp1_from_month: '', exp1_from_year: '', exp1_to_month: '', exp1_to_year: '',
+  exp1_task1: '', exp1_task2: '', exp1_task3: '',
+  exp1_actual_salary: '', exp1_leave_reason: '',
+  exp2_company: '', exp2_title: '',
+  exp2_from_month: '', exp2_from_year: '', exp2_to_month: '', exp2_to_year: '',
+  exp2_task1: '', exp2_task2: '', exp2_task3: '',
+  exp2_actual_salary: '', exp2_leave_reason: '',
+  expected_salary: '', start_date: '',
   ref1_name: '', ref1_title: '', ref1_company: '', ref1_phone: '',
   ref2_name: '', ref2_title: '', ref2_company: '', ref2_phone: '',
 };
@@ -164,10 +204,6 @@ export default function App() {
   const [done, setDone] = useState(false);
 
   const onSalary = (e: React.ChangeEvent<HTMLInputElement>) => { e.target.value = fmt(e.target.value); };
-  const position = watch('position') || '';
-  const isPortfolioRequired = PORTFOLIO_KEYWORDS.some(k => position.toLowerCase().includes(k));
-  const yearsExp = watch('years_exp') || '';
-  const isFresher = yearsExp === 'Chưa có / Đang bắt đầu';
   const sourceVal = watch('source') || '';
 
   const onSubmit = async (data: any) => {
@@ -226,8 +262,9 @@ export default function App() {
 
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
 
-            <Card num="01" title="Bạn là ai?">
-              <Input label="Họ và tên" required placeholder="Nguyễn Văn A"
+            {/* CARD 01 */}
+            <Card num="01" title="Thông tin cá nhân">
+              <Input label="Họ và tên" required placeholder=""
                 {...register('full_name', { required: REQ })} error={errors.full_name?.message} />
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Input label="Số điện thoại" required type="tel" placeholder="09xx xxx xxx"
@@ -242,7 +279,6 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field>
                   <Label required>Đang sống tại</Label>
-                  <Hint>Để BSC ước lượng khoảng cách di chuyển.</Hint>
                   <select className={cn(base, 'cursor-pointer', errors.current_district && 'border-red-400')}
                     {...register('current_district', { required: REQ })}>
                     <option value="">-- Chọn quận/huyện --</option>
@@ -275,72 +311,53 @@ export default function App() {
                 <Err msg={errors.source?.message} />
               </Field>
               {sourceVal === 'Referral' && (
-                <Input label="Tên người giới thiệu" required placeholder="Họ tên người giới thiệu bạn"
+                <Input label="Tên người giới thiệu" required placeholder=""
                   {...register('source_referrer', { required: REQ })} error={errors.source_referrer?.message} />
               )}
               {sourceVal === 'Other' && (
-                <Input label="Bạn biết đến BSC qua đâu?" required placeholder="Mô tả thêm nguồn của bạn..."
+                <Input label="Nguồn khác" required placeholder=""
                   {...register('source_other', { required: REQ })} error={errors.source_other?.message} />
               )}
             </Card>
 
-            <Card num="02" icon={<Briefcase size={14} />} title="Bạn đang apply vị trí nào?">
-              <Input label="Vị trí ứng tuyển" required
-                placeholder=""
+            {/* CARD 02 */}
+            <Card num="02" icon={<Briefcase size={14} />} title="Vị trí ứng tuyển">
+              <Input label="Vị trí ứng tuyển" required placeholder=""
                 {...register('position', { required: REQ })} error={errors.position?.message} />
             </Card>
 
-            <Card num="03" title="Chuyên môn & Kinh nghiệm">
-              <Field>
-                <Label required>Tóm tắt chuyên môn</Label>
-                <Hint>Mô tả ngắn về chuyên môn và trách nhiệm chính bạn đã đảm nhận — không cần liệt kê tất cả, chỉ cần những điều liên quan nhất đến vị trí này.</Hint>
-                <textarea rows={3}
-                  className={cn('resize-y', base, errors.self_intro && 'border-red-400')}
-                  placeholder=""
-                  {...register('self_intro', { required: REQ, minLength: { value: 30, message: 'Viết thêm một chút nữa nhé!' } })} />
-                <Err msg={errors.self_intro?.message} />
-              </Field>
-
-              <Field>
-                <Label required>Tổng số năm kinh nghiệm (tất cả lĩnh vực)</Label>
-                <select className={cn(base, 'cursor-pointer', errors.years_exp && 'border-red-400')}
-                  {...register('years_exp', { required: REQ })}>
-                  <option value="">-- Chọn --</option>
-                  <option value="Chưa có / Đang bắt đầu">Chưa có — sinh viên / fresher</option>
-                  <option value="Dưới 1 năm">Dưới 1 năm (có internship / part-time)</option>
-                  <option value="1-3 năm">1 – 3 năm</option>
-                  <option value="3-5 năm">3 – 5 năm</option>
-                  <option value="5-8 năm">5 – 8 năm</option>
-                  <option value="Trên 8 năm">Trên 8 năm</option>
-                </select>
-                <Err msg={errors.years_exp?.message} />
-              </Field>
-
-              <div className="flex flex-col gap-3">
-                <Label>Quá trình làm việc (2 công ty gần nhất)</Label>
-                {[1,2].map(n => (
-                  <ExpRow key={n} num={n} register={register} errors={errors} watch={watch} isFresher={isFresher} />
-                ))}
+            {/* CARD 03 - HỌC VẤN */}
+            <Card num="03" icon={<GraduationCap size={14} />} title="Trình độ học vấn">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field>
+                  <Label required>Trình độ</Label>
+                  <select className={cn(base, 'cursor-pointer', errors.education_level && 'border-red-400')}
+                    {...register('education_level', { required: REQ })}>
+                    <option value="">-- Chọn --</option>
+                    <option value="Trên Đại Học">Trên Đại Học</option>
+                    <option value="Đại Học">Đại Học</option>
+                    <option value="Cao đẳng / Trung cấp">Cao đẳng / Trung cấp</option>
+                    <option value="THPT">THPT</option>
+                    <option value="Khác">Khác</option>
+                  </select>
+                  <Err msg={errors.education_level?.message} />
+                </Field>
+                <Input label="Chuyên ngành (nếu có)" placeholder=""
+                  {...register('edu_major')} />
               </div>
-
-              <Field>
-                <Label required={isPortfolioRequired}>
-                  Portfolio / Sản phẩm tiêu biểu
-                  {isPortfolioRequired && <span className="ml-1 text-red-400 normal-case text-xs font-normal">(bắt buộc với vị trí này)</span>}
-                </Label>
-                <Hint>
-                  {isPortfolioRequired
-                    ? 'Behance, Dribbble, Google Drive, website cá nhân... đều được.'
-                    : 'Bắt buộc với vị trí Design & Planning. Các vị trí khác có thể bỏ qua.'}
-                </Hint>
-                <input className={cn(base, errors.portfolio && 'border-red-400')}
-                  placeholder="https://..."
-                  {...register('portfolio', isPortfolioRequired ? { required: REQ } : {})} />
-                <Err msg={errors.portfolio?.message} />
-              </Field>
             </Card>
 
-            <Card num="04" icon={<DollarSign size={14} />} title="Mong đợi">
+            {/* CARD 04 - KINH NGHIỆM */}
+            <Card num="04" title="Quá trình làm việc">
+              <div className="flex flex-col gap-4">
+                {[1,2].map(n => (
+                  <ExpRow key={n} num={n} register={register} errors={errors} watch={watch} onSalary={onSalary} />
+                ))}
+              </div>
+            </Card>
+
+            {/* CARD 05 - MONG ĐỢI */}
+            <Card num="05" icon={<DollarSign size={14} />} title="Mong đợi">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field>
                   <Label required>Mức lương mong muốn</Label>
@@ -362,7 +379,8 @@ export default function App() {
               </div>
             </Card>
 
-            <Card num="05" icon={<Users size={14} />} title="Người có thể tham vấn">
+            {/* CARD 06 - THAM VẤN */}
+            <Card num="06" icon={<Users size={14} />} title="Người có thể tham vấn">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[1,2].map(n => (
                   <div key={n} className="flex flex-col gap-2">
@@ -376,6 +394,7 @@ export default function App() {
               </div>
             </Card>
 
+            {/* SUBMIT */}
             <div className="flex flex-col gap-3 pt-2">
               <p className="text-xs text-[#5B8DB8] text-center leading-relaxed">
                 Bằng việc nhấn gửi, bạn đồng ý để Blue Sky Corporation lưu trữ thông tin này cho mục đích tuyển dụng.
