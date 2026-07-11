@@ -33,7 +33,7 @@ const MONTHS = [
   {v:"05",l:"Tháng 5"},{v:"06",l:"Tháng 6"},{v:"07",l:"Tháng 7"},{v:"08",l:"Tháng 8"},
   {v:"09",l:"Tháng 9"},{v:"10",l:"Tháng 10"},{v:"11",l:"Tháng 11"},{v:"12",l:"Tháng 12"},
 ];
-const YEARS = Array.from({length: 26}, (_, i) => String(2000 + i)).reverse();
+const YEARS = Array.from({length: 27}, (_, i) => String(2000 + i)).reverse();
 
 const fmt = (val: any) => {
   const d = String(val ?? '').replace(/\D/g, '');
